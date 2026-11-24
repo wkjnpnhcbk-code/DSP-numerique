@@ -1030,8 +1030,8 @@ const PH_CATS=[
   {k:"carriere",t:"Relevé de carrière",piece:w=>releveName(w)},
   {k:"autre",t:"Autre document",piece:null}];
 const PH_MEM=new Map(), PH_WHO={}; let PH_DB=null, PH_DBOK=true;
-function phDB(){ if(PH_DB) return PH_DB; PH_DB=new Promise((res,rej)=>{ try{ const r=indexedDB.open("dspPhotos",1); r.onupgradeneeded=()=>r.result.createObjectStore("p"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); PH_DB.catch(()=>{ PH_DBOK=false; }); return PH_DB; }
-async function phPut(id,blob){ PH_MEM.set(id,blob); if(!curId) return true; try{ const db=await phDB(); await new Promise((res,rej)=>{ const t=db.transaction("p","readwrite"); t.objectStore("p").put(blob,id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); return true; }catch(_){ PH_DBOK=false; return false; } }
+function phDB(){ if(PH_DB) return PH_DB; PH_DB=new Promise((res,rej)=>{ try{ const r=indexedDB.open("dspPhotos",1); r.onupgradeneeded=()=>r.result.createObjectStore("p"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); PH_DB.then(d=>{ d.onclose=()=>{ PH_DB=null; }; },()=>{ PH_DB=null; }); return PH_DB; }
+async function phPut(id,blob){ PH_MEM.set(id,blob); if(!curId) return true; for(let i=0;i<2;i++){ try{ const db=await phDB(); await new Promise((res,rej)=>{ const t=db.transaction("p","readwrite"); t.objectStore("p").put(blob,id); t.oncomplete=res; t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); PH_DBOK=true; return true; }catch(_){ PH_DB=null; if(i){ PH_DBOK=false; return false; } } } }
 async function phGet(id){ if(PH_MEM.has(id)) return PH_MEM.get(id); try{ const db=await phDB(); const b=await new Promise((res,rej)=>{ const r=db.transaction("p").objectStore("p").get(id); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); if(b) PH_MEM.set(id,b); return b; }catch(_){ return null; } }
 async function phDel(id){ PH_MEM.delete(id); try{ const db=await phDB(); await new Promise(res=>{ const t=db.transaction("p","readwrite"); t.objectStore("p").delete(id); t.oncomplete=res; t.onerror=res; }); }catch(_){ } }
 function phCompress(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file), img=new Image();
@@ -1289,7 +1289,7 @@ document.getElementById("bImpOpen").addEventListener("click",()=>{ document.getE
 document.getElementById("bImp").addEventListener("click",()=>{ const err=document.getElementById("impErr"); try{ const raw=document.getElementById("impTxt").value.trim(); const j=JSON.parse(raw.replace(/^DSPFICHIER:/,"")); if(!j.data||!j.data.v) throw 0;
   loadState(j.data); curId="d"+Date.now(); saveNow(); document.getElementById("cover").style.display="none"; document.getElementById("notesTa").value=S.notes||""; go(SCR.findIndex(s=>s.num==="1.1")); }catch(_){ err.textContent="Ce texte n'est pas un fichier dossier valide. Copie-le en entier depuis l'export."; } });
 document.addEventListener("input",scheduleSave); document.addEventListener("change",scheduleSave); document.addEventListener("click",e=>{ if(e.target.closest("#sheet,.top,.foot,#secs")) scheduleSave(); });
-window.addEventListener("pagehide",saveNow); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") saveNow(); });
+window.addEventListener("pagehide",saveNow); document.addEventListener("focusout",()=>{ if(curId){ clearTimeout(saveT); saveNow(); } }); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") saveNow(); });
 function loadState(o){ Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,o); if(S.notes&&String(S.notes).trim()&&!(S.notesCh&&S.notesCh.c1)){ S.notesCh=Object.assign({},S.notesCh,{c1:S.notes}); } delete S.notes; }
 function newDossier(menage){ curId="d"+Date.now(); document.getElementById("notesTa").value="";
   loadState({ v:{}, c:{}, who:"v", menage, adr:"", contact:"", principes:[], sit:"", enfants:[], parents:"", donations:[], carriere:[], contrats:[], biens:[], produits:[], prodSel:null, mPrec:2,
@@ -1297,13 +1297,18 @@ function newDossier(menage){ curId="d"+Date.now(); document.getElementById("note
     inc:{}, ret:{}, dep:{}, fm:{}, ob:{}, obAutres:"", locks:{}, diag:[], bg:{}, recos:[], prop:{}, purge:{pv:"20 %",rdt:"2,5 %",ans:"10"}, pieces:{}, piecesAutres:[], rdv:"", rdvLieu:"", ent:{}, ani:{} });
   saveNow(); document.getElementById("cover").style.display="none"; go(SCR.findIndex(s=>s.num==="1.1")); }
 /* ===== Application hors connexion : stockage IndexedDB, fichier méthode, envoi au Mac ===== */
-const APP_VERSION="1.0.1";
+const APP_VERSION="1.0.2";
 let DOS={}, METH=null;
-const KV=(()=>{ let p=null; const db=()=>p||(p=new Promise((res,rej)=>{ const r=indexedDB.open("dspApp",1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }));
-  return { get:async k=>{ const d=await db(); return new Promise((res,rej)=>{ const r=d.transaction("kv").objectStore("kv").get(k); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); },
-           set:async (k,v)=>{ const d=await db(); return new Promise((res,rej)=>{ const t=d.transaction("kv","readwrite"); t.objectStore("kv").put(v,k); t.oncomplete=()=>res(true); t.onerror=()=>rej(t.error); }); } }; })();
+/* Stockage doublé : IndexedDB + copie de secours dans localStorage (iPad : la connexion IndexedDB peut se perdre quand l'app passe en arrière-plan) */
+const KV=(()=>{ let p=null;
+  const open=()=>p||(p=new Promise((res,rej)=>{ const r=indexedDB.open("dspApp",1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>{ const d=r.result; d.onclose=()=>{ p=null; }; d.onversionchange=()=>{ d.close(); p=null; }; res(d); }; r.onerror=()=>{ p=null; rej(r.error); }; }));
+  const run=async(mode,fn)=>{ for(let i=0;i<2;i++){ try{ const d=await open(); return await new Promise((res,rej)=>{ const t=d.transaction("kv",mode); const out=fn(t.objectStore("kv")); t.oncomplete=()=>res(out.result); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); }catch(e){ p=null; if(i) throw e; } } };
+  return { get:k=>run("readonly",st=>st.get(k)), set:(k,v)=>run("readwrite",st=>st.put(v,k)) }; })();
+const LSK="dspDossiers_v2";
+const lsGet=()=>{ try{ return JSON.parse(localStorage.getItem(LSK)||"{}"); }catch(_){ return {}; } };
+const lsSet=o=>{ try{ localStorage.setItem(LSK,JSON.stringify(o)); return true; }catch(_){ return false; } };
 function store(){ return DOS; }
-function putStore(o){ DOS=o; KV.set("dossiers",JSON.parse(JSON.stringify(o))).catch(()=>setBanner(false)); return true; }
+function putStore(o){ DOS=o; const ok=lsSet(o); KV.set("dossiers",JSON.parse(JSON.stringify(o))).then(()=>{ if(!ok) setBanner(true); },()=>{ if(!ok) setBanner(false); }); return ok; }
 /* --- fichier méthode (textes du bandeau), importé une fois, jamais publié --- */
 const condTxt=s=>String(s??"").replace(/\[\[([\s\S]*?)\|\|([\s\S]*?)\]\]/g,(_,a,b)=>hasConj()?a:b);
 function applyMethode(M){ METH=M; SCR.forEach(sc=>{ const m=M&&M.screens&&M.screens[sc.num||sc.name]; if(!m){ return; }
@@ -1341,7 +1346,9 @@ document.addEventListener("click",e=>{
 });
 async function boot(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(_){ }
-  try{ DOS=(await KV.get("dossiers"))||{}; }catch(_){ DOS={}; }
+  let a={}, b=lsGet(); try{ a=(await KV.get("dossiers"))||{}; }catch(_){ }
+  DOS={}; new Set([...Object.keys(a),...Object.keys(b)]).forEach(id=>{ const x=a[id], y=b[id]; DOS[id]=!x?y:!y?x:(String(y.maj)>String(x.maj)?y:x); });
+  lsSet(DOS); KV.set("dossiers",JSON.parse(JSON.stringify(DOS))).catch(()=>{});
   try{ const m=await KV.get("methode"); if(m) applyMethode(m); }catch(_){ }
   renderCover(); setBanner(); methStatus(); document.getElementById("appV").textContent=APP_VERSION;
   if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")) navigator.serviceWorker.register("sw.js").catch(()=>{});
