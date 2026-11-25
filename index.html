@@ -245,12 +245,12 @@ body.client .agent{display:none!important}
 .risk .r.na{color:#7a7ab0;font-weight:600;font-size:15px}
 
 /* souffleur */
-aside{width:320px;flex:none;background:#101433;color:#e8e9f6;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:10px}
+aside{width:320px;flex:none;background:#101433;color:#e8e9f6;overflow:auto;padding:18px 18px 110px;display:flex;flex-direction:column;gap:10px;scroll-padding-bottom:110px}
 body.client aside{display:none}
 aside h4{margin:6px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#9aa0d6}
 aside .say{font-family:var(--display);font-size:17px;line-height:1.5;color:#fff;border-left:3px solid #6f74d8;padding-left:12px;margin:0}
 aside ul{margin:0;padding-left:18px;font-size:15px;color:#d5d7f5;display:flex;flex-direction:column;gap:6px}
-aside textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px;min-height:120px;width:100%;resize:vertical}
+aside textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px;min-height:160px;width:100%;resize:vertical;font-size:16px;flex:none}
 aside .rg{font-size:12px;color:#9aa0d6}
 
 /* sommaire */
@@ -350,6 +350,8 @@ details.objd>summary{cursor:pointer;font-weight:700;color:var(--teal);padding:8p
 #synPage .sy-kv table td:first-child{color:#555b85;width:46%}
 #synPage .sy-kv table td:last-child{font-weight:600;color:var(--navy)}
 #synPage .sy-person{font-size:14px;font-weight:700;color:#fff;background:var(--navy);padding:4px 8px;border-radius:3px}
+#synPage .sy-note{background:#fff6d6;border:2px solid #e0a400;border-left-width:6px;border-radius:6px;padding:10px 14px;margin:0 0 12px;font-size:14.5px;color:#4a3a00;break-inside:avoid}
+#synPage .sy-note b{display:block;color:#8a5a00;font-size:13px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
 #synPage .sy-box{background:#f7f7fc;border-left:4px solid var(--burg);padding:8px 12px;border-radius:0 6px 6px 0;font-size:14px;margin-bottom:6px}
 #synPage .sy-box b{color:var(--burg)}
 #synPage footer{font-size:12px;color:#777;border-top:1px solid var(--line);padding-top:10px}
@@ -877,7 +879,7 @@ add(3,"4.4","Épargne et retraite",{r:()=>BOX("4.4","Épargne et retraite",PRIO(
 add(3,"4.5","Autres exigences",{r:()=>BOX("4.5","Autres exigences particulières ?",`<textarea class="t" data-p="obAutres" aria-label="Autres exigences">${esc(S.obAutres)}</textarea><button data-neant style="align-self:flex-start;border:1.5px solid var(--navy);padding:10px 18px;font-weight:700;color:var(--navy)">Néant</button>`)});
 
 add(4,"5.1","Pré-diagnostic",{client:true,
-  r:()=>BOX("5.1","Pré-diagnostic",MULTI("diag",["Décès","Incapacité / Invalidité","Santé","Retraite","Dépendance","Études des enfants","Optimisation des placements","Autres"],"sm")+`<div class="lab">Vos besoins validés aujourd'hui</div><div data-c="diag"></div><p class="lead">Les garanties de votre régime obligatoire seront chiffrées dans votre bilan : les découverts précis vous seront présentés au prochain rendez-vous.</p>`)});
+  r:()=>BOX("5.1","Pré-diagnostic",MULTI("diag",["Décès","Prévoyance","Santé","Retraite","Dépendance","Études des enfants","Optimisation des placements","Autres"],"sm")+`<div class="lab">Vos besoins validés aujourd'hui</div><div data-c="diag"></div><p class="lead">Les garanties de votre régime obligatoire seront chiffrées dans votre bilan : les découverts précis vous seront présentés au prochain rendez-vous.</p>`)});
 add(4,"5.2","Budget global",{
   r:()=>BOX("5.2","Budget global nécessaire",`<div class="g2">${F("bg.prec","Préconisation mensuelle",{money:true,u:"€ / mois",hint:"Repère 4 % : <b data-c='bg4'></b> · retraite 10 % : <b data-c='bg10'></b>"})}${F("bg.transf","Épargne à transférer immédiatement",{money:true,hint:"Calculée en 2.7 : <b data-c='transf'></b>"})}</div>
     ${hasConj()?YN("Souhaitez-vous la participation de votre conjoint à la suite de nos entretiens ?","bg.conj"):""}${YN("Connaissez-vous l'environnement Madelin ?","bg.mad")}${YN("Connaissez-vous l'environnement Fillon ?","bg.fil")}${YN("Connaissez-vous la fiscalité du PER ?","bg.per")}`)
@@ -919,7 +921,7 @@ function render(anim){
   if(anim){ sh.classList.remove("slide-l","slide-r"); void sh.offsetWidth; sh.classList.add(dir==="l"?"slide-l":"slide-r"); document.getElementById("main").scrollTop=0; }
   if(sc.parts){ document.getElementById("say").innerHTML=sc.parts.map((p,i)=>`<div class="part ${i===0?"on":""}" data-sp="${i}"><h5>${i+1} · ${p.t}</h5><p class="say">${p.say}</p><ul>${p.chk.map(t=>`<li>${t}</li>`).join("")}</ul></div>`).join(""); document.getElementById("chk").innerHTML=""; document.getElementById("chkH").style.display="none"; }
   else { document.getElementById("say").innerHTML=`<p class="say">${(typeof sc.say==="function"?sc.say():sc.say)||""}</p>`; document.getElementById("chk").innerHTML=((typeof sc.chk==="function"?sc.chk():sc.chk)||[]).map(t=>`<li>${t}</li>`).join(""); document.getElementById("chkH").style.display=""; }
-  { const ta=document.getElementById("notesTa"), np="notesCh.c"+(sc.ch+1); if(ta.dataset.p!==np||document.activeElement!==ta){ ta.dataset.p=np; ta.value=get(np)||""; } document.getElementById("notesH").textContent="Notes · chapitre "+(sc.ch+1)+" · "+CHT[sc.ch]; }
+  { const ta=document.getElementById("notesTa"), np="notesCh.c"+(sc.ch+1); if(ta.dataset.p!==np||document.activeElement!==ta){ ta.dataset.p=np; ta.value=get(np)||""; ta.style.height=""; } document.getElementById("notesH").textContent="Notes · chapitre "+(sc.ch+1)+" · "+CHT[sc.ch]; }
   lastAct=-1; document.getElementById("souf").scrollTop=0; setTimeout(syncParts,0);
   const p=step(-1), nx=step(1), vis=SCR.filter((_,i)=>visible(i)), pos=vis.indexOf(sc)+1;
   document.getElementById("prev").textContent = p!=null?`← ${SCR[p].num||""} ${SCR[p].name}`:"← Couverture";
@@ -1081,7 +1083,8 @@ function synthHTML(){
   const J=a=>a.filter(Boolean).join(" · ");
   const kv=rows=>`<table>${rows.filter(Boolean).map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>`;
   const kvn=rows=>`<table>${rows.filter(Boolean).map(([a,b,t])=>`<tr${t?' class="sy-tot"':""}><td>${a}</td><td class="sy-n">${b}</td></tr>`).join("")}</table>`;
-  const sec=(t,body)=>`<section><div class="sy-sh"><h2>${t}</h2><button data-sycopy>Copier</button></div>${body}</section>`;
+  const NOTE=i=>{ const t=(S.notesCh||{})["c"+i]; return t&&String(t).trim()?`<div class="sy-note"><b>✎ Note — chapitre ${i} · ${esc(CHT[i-1])}</b><div>${esc(String(t).trim()).replace(/\n/g,"<br>")}</div></div>`:""; };
+  const sec=(t,body,nt="")=>`<section><div class="sy-sh"><h2>${t}</h2><button data-sycopy>Copier</button></div>${nt}${body}</section>`;
   const ageTxt=d=>d?esc(d)+(age(d)!=null?" ("+age(d)+" ans)":""):MS;
   SCR.filter(s=>s.ch===3).forEach(s=>{ try{ s.r(); }catch(_){ } });
   let h=`<header><div><h1>${esc(dosName(S))}</h1><div class="sy-sub">Découverte sociale et patrimoniale · synthèse détaillée</div></div><div class="sy-meta">Exportée le ${new Date().toLocaleDateString("fr-FR")}${S.rdvLieu?"<br>Prochain RDV : "+esc(S.rdvLieu):""}</div></header>`;
@@ -1099,7 +1102,7 @@ function synthHTML(){
     S.sit==="Marié(e)"?["Régime matrimonial",X(S.regime)]:null,
     (S.ddv||S.testament)?["Donation au dernier vivant · testament",esc(J([S.ddv,S.testament?"testament : "+yes(S.testament):""]))]:null]);
   const fam2=kv([...enf,["Revenus du foyer · TMI",esc(J([M(K.revFoyer())+" / an",S.tmi]))],S.notaire?["Notaire",esc(S.notaire)]:null]);
-  h+=sec("1. Identité et situation familiale",`<div class="sy-kv">${pers}</div><div class="sy-kv" style="margin-top:8px"><div>${fam}</div><div>${fam2}</div></div>`);
+  h+=sec("1. Identité et situation familiale",`<div class="sy-kv">${pers}</div><div class="sy-kv" style="margin-top:8px"><div>${fam}</div><div>${fam2}</div></div>`,NOTE(1));
   /* 2. Actif */
   const biens=S.biens||[];
   let a=`<h3>Immobilier</h3>`+(biens.length?`<table><thead><tr><th>Bien</th><th>Type</th><th>Détention</th><th class="sy-n">Prix d'achat</th><th class="sy-n">Valeur</th></tr></thead><tbody>${biens.map(b=>`<tr><td><b>${esc(b.nom||b.type)}</b></td><td>${esc(b.type||"")}</td><td>${esc(J([b.det,b.mode,b.pv!=null&&b.pv!==""?(hasConj()&&b.pc!=null&&b.pc!==""?b.pv+" / "+b.pc+" %":b.pv+" %"):"",b.annee?"acquis en "+b.annee:""]))}</td><td class="sy-n">${M(b.acq)||"—"}</td><td class="sy-n">${XM(b.val)}</td></tr>`).join("")}<tr class="sy-tot"><td colspan="4">Total immobilier</td><td class="sy-n">${M(K.imm(b=>Number(b.val)||0))}</td></tr></tbody></table>`:`<p class="sy-none">Aucun bien renseigné</p>`);
@@ -1107,7 +1110,7 @@ function synthHTML(){
   a+=`<h3>Comptes bancaires et épargne</h3>`+(prods.length?`<table><thead><tr><th>Produit</th><th>Établissement</th><th>Titulaire</th><th>Ouverture</th><th>Détail</th><th class="sy-n">Montant</th></tr></thead><tbody>${Object.entries(ENV).map(([k,e])=>{ const ps=prods.filter(x=>x.env===k); if(!ps.length) return ""; return `<tr class="sy-grp"><td colspan="6">${esc(e.t)} · ${esc(e.s)}</td></tr>`+ps.map(x=>`<tr><td><b>${esc(x.nom||x.type)}</b>${x.nom&&x.type?`<br><small>${esc(x.type)}</small>`:""}</td><td>${esc(x.org||"—")}</td><td>${esc(x.det||"—")}</td><td>${esc(x.date||"—")}</td><td>${esc(J([x.uc?x.uc+" UC":"",x.clause,x.vr?"versements "+M(x.vr)+" / mois":""]))}</td><td class="sy-n">${XM(x.enc)}</td></tr>`).join(""); }).join("")}<tr class="sy-tot"><td colspan="5">Total épargne</td><td class="sy-n">${M(prods.reduce((s,x)=>s+(Number(x.enc)||0),0))}</td></tr></tbody></table>`:`<p class="sy-none">Aucun compte ni placement renseigné</p>`);
   const actBrut=K.imm(b=>Number(b.val)||0)+prods.reduce((s,x)=>s+(Number(x.enc)||0),0);
   a+=`<table style="margin-top:6px"><tbody><tr class="sy-tot"><td>Total actif brut</td><td class="sy-n">${M(actBrut)}</td></tr></tbody></table>`;
-  h+=sec("2. Actif — ligne par ligne",a);
+  h+=sec("2. Actif — ligne par ligne",a,NOTE(2));
   /* 3. Crédits */
   const cr=biens.filter(b=>b.cr==="Oui"), crd=cr.reduce((s,b)=>s+(Number(b.crd)||0),0);
   h+=sec("3. Crédits en cours",cr.length?`<table><thead><tr><th>Crédit</th><th>Banque</th><th class="sy-n">Emprunté</th><th class="sy-n">Restant dû</th><th class="sy-n">Mensualité</th><th>Taux · fin</th><th>Assurance emprunteur</th></tr></thead><tbody>${cr.map(b=>`<tr><td><b>${esc(b.nom||b.type)}</b></td><td>${X(b.org)}</td><td class="sy-n">${M(b.cap)||"—"}</td><td class="sy-n">${XM(b.crd)}</td><td class="sy-n">${XM(b.mens)}</td><td>${esc(J([b.taeg,b.fin]))||MS}</td><td>${esc(J([b.adeType,b.adv!=null&&b.adv!==""?"décès "+nm("v")+" "+b.adv+" %":"",hasConj()&&b.adc!=null&&b.adc!==""?nm("c")+" "+b.adc+" %":"",b.invp?"invalidité partielle : "+b.invp.toLowerCase():""]))||MS}</td></tr>`).join("")}<tr class="sy-tot"><td colspan="3">Patrimoine net</td><td class="sy-n" colspan="4" style="text-align:left">${M(actBrut)} − ${M(crd)} = ${M(actBrut-crd)}</td></tr></tbody></table>`:`<p class="sy-none">Aucun crédit renseigné · patrimoine net ${M(actBrut)}</p>`);
@@ -1131,7 +1134,7 @@ function synthHTML(){
   const sl=[["cour","Soins courants"],["opt","Optique"],["dent","Dentaire"],["hosp","Hospitalisation"],["aud","Audition"],["douce","Médecine douce"]].filter(([k])=>(sa[k]||{}).niv).map(([k,l])=>[l+(k==="douce"&&sa.douce.seances?" · "+esc(sa.douce.seances)+" séances / an":""),esc(sa[k].niv)]);
   const etu=(S.enfants||[]).filter(e=>e.etuCap||e.etuBa).map(e=>["Études "+esc(e.prenom||""),esc(J([e.etuCap?M(e.etuCap):"",e.etuBa?M(e.etuBa)+" / an":"",e.etuAge?"à "+e.etuAge+" ans":""]))]);
   const dep=[S.dep.v?["Dépendance "+esc(nm("v")),M(S.dep.v)+" / mois"]:null,hasConj()&&S.dep.c?["Dépendance "+esc(nm("c")),M(S.dep.c)+" / mois"]:null,S.dep.a?["Dépendance parent",M(S.dep.a)+" / mois"]:null].filter(Boolean);
-  h+=sec("5. Passif — besoins exprimés",`<div class="sy-kv"><div><h3>Décès · argent immédiat</h3>${L1}<h3>Décès · revenus de la famille</h3>${L2}${etu.length?"<h3>Études des enfants</h3>"+kvn(etu):""}</div><div><h3>Arrêt de travail · ${esc(nm("v"))}</h3>${R1}<h3>Invalidité · ${esc(nm("v"))}</h3>${R2}<h3>Retraite</h3>${R3}${sl.length?"<h3>Santé · niveaux de besoin</h3>"+kvn(sl):""}${dep.length?"<h3>Dépendance</h3>"+kvn(dep):""}</div></div>`);
+  h+=sec("5. Passif — besoins exprimés",`<div class="sy-kv"><div><h3>Décès · argent immédiat</h3>${L1}<h3>Décès · revenus de la famille</h3>${L2}${etu.length?"<h3>Études des enfants</h3>"+kvn(etu):""}</div><div><h3>Arrêt de travail · ${esc(nm("v"))}</h3>${R1}<h3>Invalidité · ${esc(nm("v"))}</h3>${R2}<h3>Retraite</h3>${R3}${sl.length?"<h3>Santé · niveaux de besoin</h3>"+kvn(sl):""}${dep.length?"<h3>Dépendance</h3>"+kvn(dep):""}</div></div>`,NOTE(3));
   /* 6. Fiscal, pièces, notes */
   const fis=[]; const tmi=(Number(String(S.tmi||"").replace(/[^\d]/g,""))||0)/100;
   WS().forEach(w=>{ const p=S[w], B=Number(p.benef??p.rpro)||0; if(!B) return;
@@ -1141,13 +1144,13 @@ function synthHTML(){
   const pa=piecesList().filter(p=>S.pieces[p.t]==="ask").map(p=>esc(p.t));
   const recos=(S.recos||[]).map(r=>["Recommandation"+(r.star?" ★":""),esc(J([r.nom,r.prof,r.tel]))]);
   const left=kv([...prioTxt().filter(([a,b])=>!/^Pas concerné/.test(b)).map(([a,b])=>["Priorité · "+esc(a),esc(b).replace(" — proposé, non validé",' <span class="sy-miss">proposé, non validé</span>')]),...fis.map(([a,b])=>[a,`<b>${b}</b>`]),["Pièces à fournir",pa.length?pa.join(" · "):"—"],["Prochain rendez-vous",esc(J([S.rdv,S.rdvLieu]))||"—"],...recos]);
-  const notes=[1,2,3,4,5,6].map(i=>{ const t=(S.notesCh||{})["c"+i]; return t&&String(t).trim()?`<div class="sy-box"><b>Chapitre ${i} · ${esc(CHT[i-1])}</b> — ${esc(String(t).trim()).replace(/\n/g,"<br>")}</div>`:""; }).join("")||'<p class="sy-none">Aucune note</p>';
-  h+=sec("6. Priorités, enveloppes fiscales, pièces et notes",`<div class="sy-kv"><div>${left}</div><div>${notes}</div></div>`);
+  const notesOld=[1,2,3,4,5,6].map(i=>{ const t=(S.notesCh||{})["c"+i]; return t&&String(t).trim()?`<div class="sy-box"><b>Chapitre ${i} · ${esc(CHT[i-1])}</b> — ${esc(String(t).trim()).replace(/\n/g,"<br>")}</div>`:""; }).join("")||'<p class="sy-none">Aucune note</p>';
+  h+=sec("6. Priorités, enveloppes fiscales et pièces",left,NOTE(4)+NOTE(5)+NOTE(6));
   h+=phSynthHTML();
   h+=`<footer>Synthèse générée à partir de la Découverte Sociale et Patrimoniale. Besoins exprimés par le client ; découverts à chiffrer au BAO. Document de travail interne.</footer>`;
   return h; }
 function synthBlockTxt(sec){ const lines=[];
-  sec.querySelectorAll("h2,h3,.sy-person,tr,.sy-box,.sy-none").forEach(el=>{
+  sec.querySelectorAll("h2,h3,.sy-person,tr,.sy-box,.sy-note,.sy-none").forEach(el=>{
     if(el.tagName==="TR"){ if(el.parentElement.tagName==="THEAD") return;
       const th=[...(el.closest("table").querySelectorAll("thead th"))].map(x=>x.textContent.trim());
       let i=0; const parts=[...el.children].map((c,k)=>{ const t=c.innerText.trim().replace(/\s*\n\s*/g," "); const lab=th[i]; i+=c.colSpan||1; return t?(k>0&&lab&&c.colSpan===1&&!el.classList.contains("sy-tot")&&!el.classList.contains("sy-grp")?lab+" : "+t:t):""; });
@@ -1290,14 +1293,14 @@ document.getElementById("bImp").addEventListener("click",()=>{ const err=documen
   loadState(j.data); curId="d"+Date.now(); saveNow(); document.getElementById("cover").style.display="none"; document.getElementById("notesTa").value=S.notes||""; go(SCR.findIndex(s=>s.num==="1.1")); }catch(_){ err.textContent="Ce texte n'est pas un fichier dossier valide. Copie-le en entier depuis l'export."; } });
 document.addEventListener("input",scheduleSave); document.addEventListener("change",scheduleSave); document.addEventListener("click",e=>{ if(e.target.closest("#sheet,.top,.foot,#secs")) scheduleSave(); });
 window.addEventListener("pagehide",saveNow); document.addEventListener("focusout",()=>{ if(curId){ clearTimeout(saveT); saveNow(); } }); document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") saveNow(); });
-function loadState(o){ Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,o); if(S.notes&&String(S.notes).trim()&&!(S.notesCh&&S.notesCh.c1)){ S.notesCh=Object.assign({},S.notesCh,{c1:S.notes}); } delete S.notes; }
+function loadState(o){ Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,o); if(Array.isArray(S.diag)) S.diag=S.diag.map(x=>x==="Incapacité / Invalidité"?"Prévoyance":x); if(S.notes&&String(S.notes).trim()&&!(S.notesCh&&S.notesCh.c1)){ S.notesCh=Object.assign({},S.notesCh,{c1:S.notes}); } delete S.notes; }
 function newDossier(menage){ curId="d"+Date.now(); document.getElementById("notesTa").value="";
   loadState({ v:{}, c:{}, who:"v", menage, adr:"", contact:"", principes:[], sit:"", enfants:[], parents:"", donations:[], carriere:[], contrats:[], biens:[], produits:[], prodSel:null, mPrec:2,
     profil:{v:{},c:{}}, durab:{v:{},c:{}}, alin:{readapt:"6 mois"}, tmi:"", bud:{}, rf:{}, sante:{cour:{},opt:{},dent:{},hosp:{},aud:{},douce:{types:[]},insat:[]},
     inc:{}, ret:{}, dep:{}, fm:{}, ob:{}, obAutres:"", locks:{}, diag:[], bg:{}, recos:[], prop:{}, purge:{pv:"20 %",rdt:"2,5 %",ans:"10"}, pieces:{}, piecesAutres:[], rdv:"", rdvLieu:"", ent:{}, ani:{} });
   saveNow(); document.getElementById("cover").style.display="none"; go(SCR.findIndex(s=>s.num==="1.1")); }
 /* ===== Application hors connexion : stockage IndexedDB, fichier méthode, envoi au Mac ===== */
-const APP_VERSION="1.0.3";
+const APP_VERSION="1.0.4";
 let DOS={}, METH=null;
 /* Stockage doublé : IndexedDB + copie de secours dans localStorage (iPad : la connexion IndexedDB peut se perdre quand l'app passe en arrière-plan) */
 const KV=(()=>{ let p=null;
@@ -1359,7 +1362,7 @@ boot();
 let tx=null,ty=null;
 const mainEl=document.getElementById("main");
 let lastAct=-1;
-function syncParts(){ const aside=document.getElementById("souf"), parts=[...document.querySelectorAll("[data-part]")];
+function syncParts(){ const aside=document.getElementById("souf"), parts=[...document.querySelectorAll("[data-part]")]; if(document.activeElement&&document.activeElement.id==="notesTa") return;
   if(!parts.length){ const r=mainEl.scrollTop/Math.max(1,mainEl.scrollHeight-mainEl.clientHeight); aside.scrollTop=r*(aside.scrollHeight-aside.clientHeight); return; }
   const lim=mainEl.getBoundingClientRect().top+mainEl.clientHeight*0.22; let act=Number(parts[0].dataset.part);
   parts.forEach(p=>{ if(p.getBoundingClientRect().top<lim) act=Number(p.dataset.part); });
@@ -1367,6 +1370,15 @@ function syncParts(){ const aside=document.getElementById("souf"), parts=[...doc
   document.querySelectorAll("[data-sp]").forEach(el=>el.classList.toggle("on",Number(el.dataset.sp)===act));
   if(act!==lastAct){ lastAct=act; const el=document.querySelector(`[data-sp="${act}"]`); if(el){ const top=el.getBoundingClientRect().top-aside.getBoundingClientRect().top+aside.scrollTop-12; aside.scrollTo({top:Math.max(0,top),behavior:"smooth"}); } } }
 mainEl.addEventListener("scroll",syncParts,{passive:true});
+(function(){ const ta=document.getElementById("notesTa"), aside=document.getElementById("souf");
+  const grow=()=>{ ta.style.height="auto"; ta.style.height=Math.max(160,ta.scrollHeight+4)+"px"; };
+  const show=()=>{ const vv=window.visualViewport, ar=aside.getBoundingClientRect(), tr=ta.getBoundingClientRect();
+    const bottomLimit=Math.min(ar.bottom-90,(vv?vv.height+vv.offsetTop:innerHeight)-20);
+    if(tr.bottom>bottomLimit) aside.scrollTop+=tr.bottom-bottomLimit; else if(tr.top<ar.top+10) aside.scrollTop-=ar.top+10-tr.top; };
+  ta.addEventListener("focus",()=>{ grow(); setTimeout(show,350); });
+  ta.addEventListener("input",()=>{ grow(); show(); });
+  if(window.visualViewport) visualViewport.addEventListener("resize",()=>{ if(document.activeElement===ta) show(); });
+})();
 mainEl.addEventListener("touchstart",e=>{ if(e.target.closest("input,textarea,select")){tx=null;return;} tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
 mainEl.addEventListener("touchend",e=>{ if(tx==null) return; const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; tx=null;
   if(Math.abs(dx)>90&&Math.abs(dy)<60){ const t=dx<0?step(1):step(-1); if(t!=null) go(t,dx<0?"l":"r"); } },{passive:true});
