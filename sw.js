@@ -1,6 +1,6 @@
 /* Service worker : l'application fonctionne hors connexion.
    Les données des clients ne passent jamais par ici : elles restent dans le stockage de l'appareil. */
-const CACHE = "dsp-1.0.8";
+const CACHE = "dsp-1.0.9";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 /* toujours télécharger depuis le serveur (jamais depuis le cache du navigateur) pour avoir la dernière version */
 const fresh = u => fetch(new Request(u, { cache: "no-store" }));

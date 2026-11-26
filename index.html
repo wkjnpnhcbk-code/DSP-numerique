@@ -325,7 +325,7 @@ details.objd>summary{cursor:pointer;font-weight:700;color:var(--teal);padding:8p
 .phclear{margin-top:16px;border:1.5px solid var(--red);color:var(--red);font-weight:700;padding:10px 16px}
 .phmiss{font-size:11px;color:var(--red)}
 #tab{position:fixed;inset:0;z-index:60;background:#fff;display:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-#tab .tb-bar{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px calc(8px);padding-top:calc(8px + env(safe-area-inset-top));background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,60,.06)}
+#tab .tb-bar{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px calc(8px);padding-top:calc(20px + env(safe-area-inset-top));background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,60,.06)}
 #tab .tb-bar b{font-family:var(--display);font-size:18px;color:var(--burg);margin-right:6px}
 #tab .tb-grp{display:flex;gap:5px;align-items:center;padding:0 6px;border-left:1px solid var(--line)}
 #tab button{font:inherit;border:1.5px solid var(--line);background:#fff;border-radius:8px;min-width:42px;min-height:42px;padding:4px 8px;font-weight:700;color:#1d1d9b;cursor:pointer}
@@ -1365,7 +1365,7 @@ function newDossier(menage){ curId="d"+Date.now(); document.getElementById("note
     inc:{}, ret:{}, dep:{}, fm:{}, ob:{}, obAutres:"", locks:{}, diag:[], bg:{}, recos:[], prop:{}, purge:{pv:"20 %",rdt:"2,5 %",ans:"10"}, pieces:{}, piecesAutres:[], rdv:"", rdvLieu:"", ent:{}, ani:{} });
   saveNow(); document.getElementById("cover").style.display="none"; go(SCR.findIndex(s=>s.num==="1.1")); }
 /* ===== Application hors connexion : stockage IndexedDB, fichier méthode, envoi au Mac ===== */
-const APP_VERSION="1.0.8";
+const APP_VERSION="1.0.9";
 let DOS={}, METH=null;
 /* Stockage doublé : IndexedDB + copie de secours dans localStorage (iPad : la connexion IndexedDB peut se perdre quand l'app passe en arrière-plan) */
 const KV=(()=>{ let p=null;
@@ -1482,7 +1482,9 @@ function moveGest(){ const P=[...touches.values()]; if(!gest||!P.length) return;
   const wx=(gest.mid0.x-gest.tx0)/gest.s0, wy=(gest.mid0.y-gest.ty0)/gest.s0;
   view.s=sNew; view.tx=mid.x-wx*sNew; view.ty=mid.y-wy*sNew; redraw(true); }
 function hit(pt){ const L=pages[cur]; for(let i=L.length-1;i>=0;i--){ if(L[i].pts&&L[i].pts.some(q=>Math.hypot(q.x-pt.x,q.y-pt.y)<14/view.s)){ L.splice(i,1); redraw(); persist(); return; } } }
-cv.addEventListener("pointerdown",e=>{ if(e.pointerType==="pen"&&!penOnly){ penOnly=true; syncPen(); }
+/* iPad : empêche le système (Écriture manuscrite / Scribble, défilement, loupe) de capturer les traits du Pencil sur la feuille */
+["touchstart","touchmove","touchend"].forEach(t=>cv.addEventListener(t,e=>{ if(e.cancelable) e.preventDefault(); },{passive:false}));
+cv.addEventListener("pointerdown",e=>{ e.preventDefault(); if(e.pointerType==="pen"&&!penOnly){ penOnly=true; syncPen(); }
   try{ cv.setPointerCapture(e.pointerId); }catch(_){}
   if(e.pointerType==="touch"){ touches.set(e.pointerId,scr(e));
     if(penOnly||touches.size>1){ if(stroke&&stroke.byTouch){ if(!stroke.eraser) pages[cur].pop(); stroke=null; redraw(true); } startGest(); return; } } const p=pos(e); if(tool==="eraser"){ stroke={eraser:true}; hit(p); return; }
