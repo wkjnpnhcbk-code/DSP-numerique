@@ -384,6 +384,8 @@ details.objd>summary{cursor:pointer;font-weight:700;color:var(--teal);padding:8p
       <div id="dosList" style="display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto"></div>
       <button class="newd" data-new="Personne seule">+ Nouvelle découverte</button><button class="newd" id="bImpFile" style="border-style:solid">Importer un dossier (fichier .dsp)</button><button id="bImpOpen" style="font-size:13px;color:#8d6b6d;text-decoration:underline;align-self:flex-start">ou coller un « fichier dossier » copié</button>
       <div id="impBox" style="display:none;flex-direction:column;gap:8px"><textarea id="impTxt" rows="4" style="border:1px solid #d9b9bb;padding:8px;font-size:13px" placeholder="Colle ici le texte « fichier dossier » copié depuis l'export"></textarea><button class="newd" id="bImp" style="border-style:solid">Ouvrir ce dossier</button><span id="impErr" style="color:#c8202b;font-size:13px"></span></div>
+      <button class="newd" id="bSent" style="border-style:solid;display:none;justify-content:space-between;align-items:center"></button>
+      <div id="sentBox" style="display:none;flex-direction:column;gap:8px"></div>
       <div id="methSt" style="font-size:14px;border-top:1px solid #ecd9da;padding-top:10px;margin-top:4px"></div>
       <small style="color:#8d6b6d">DSP numérique · version <span id="appV"></span> · hors connexion · <button data-open-dossier style="font-size:inherit;color:#8d6b6d;text-decoration:underline;padding:0;min-height:0;background:none;border:0">Voir un exemple</button></small>
     </div>
@@ -1069,14 +1071,15 @@ function renderCover(){ const o=store(), fd=d=>new Date(d).toLocaleDateString("f
   const st=id=>{ const d=o[id].data||{}; if(!d.envoye) return "new"; return d.envoyeHash&&d.envoyeHash!==dHash(d)?"mod":"sent"; };
   const item=(id,info)=>`<div class="dos" style="grid-template-columns:1fr auto auto"><button data-load="${id}" style="text-align:left"><b>${esc(o[id].nom)}</b><br><small>${info}</small></button><span></span><button data-delask="${id}" style="font-size:22px;color:#8d6b6d;padding:0 6px" aria-label="Supprimer">×</button>${o[id].ask?`<span style="grid-column:1/4;font-size:14px">Supprimer ce dossier ? <button data-del2="${id}" style="font-weight:700;color:#c8202b;margin-left:8px">Oui, supprimer</button> <button data-delno="${id}" style="font-weight:700;margin-left:8px">Non</button></span>`:""}</div>`;
   const all=Object.keys(o), cur=all.filter(id=>st(id)!=="sent").sort((a,b)=>(o[b].maj||"").localeCompare(o[a].maj||"")), sent=all.filter(id=>st(id)==="sent").sort((a,b)=>(o[b].data.envoye||"").localeCompare(o[a].data.envoye||""));
-  const curHtml=cur.length?cur.map(id=>item(id,`Modifié le ${fd(o[id].maj)} à ${ft(o[id].maj)} · `+(st(id)==="mod"?`<b style="color:#c8202b">modifiée depuis l'envoi du ${fd(o[id].data.envoye)} · à renvoyer</b>`:`<b style="color:#a86a00">pas encore envoyée</b>`))).join(""):'<p style="margin:0;color:#8d6b6d;font-size:14px">Aucune découverte en cours.</p>';
+  document.getElementById("dosList").innerHTML=cur.length?cur.map(id=>item(id,`Modifié le ${fd(o[id].maj)} à ${ft(o[id].maj)}`+(st(id)==="mod"?` · <b style="color:var(--burg)">modifiée depuis l'envoi du ${fd(o[id].data.envoye)} · à renvoyer</b>`:""))).join(""):'<p style="margin:0;color:#8d6b6d;font-size:14px">Aucune découverte en cours.</p>';
+  const bs=document.getElementById("bSent"), box=document.getElementById("sentBox");
+  bs.style.display=sent.length?"flex":"none"; bs.innerHTML=`<span>Envoyées au PC (${sent.length})</span><span>${sentOpen?"▴":"▾"}</span>`;
+  if(!sent.length||!sentOpen){ box.style.display="none"; box.innerHTML=""; return; }
   const q=sentQ.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""), sentF=q?sent.filter(id=>String(o[id].nom).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").includes(q)):sent;
-  const sentHtml=sent.length?`<details id="sentFold" ${sentOpen?"open":""} style="border-top:1px solid #ecd9da;padding-top:8px;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:#1d7a4c;padding:6px 0">📁 Envoyées au Mac (${sent.length})</summary>
-    <input id="sentQ" placeholder="Rechercher un client…" value="${esc(sentQ)}" style="width:100%;border:1px solid #d4d6e8;border-radius:6px;padding:8px 10px;margin:6px 0 8px;font-size:15px">
-    <div style="display:flex;flex-direction:column;gap:8px">${sentF.map(id=>item(id,`<b style="color:#1d7a4c">Envoyée au Mac le ${fd(o[id].data.envoye)} à ${ft(o[id].data.envoye)}</b>`)).join("")||'<p style="margin:0;color:#8d6b6d;font-size:14px">Aucun client trouvé.</p>'}</div></details>`:"";
-  document.getElementById("dosList").innerHTML=curHtml+sentHtml;
-  const f=document.getElementById("sentFold"); if(f) f.addEventListener("toggle",()=>{ sentOpen=f.open; });
-  const qi=document.getElementById("sentQ"); if(qi) qi.addEventListener("input",()=>{ sentQ=qi.value; const pos=qi.selectionStart; renderCover(); const n=document.getElementById("sentQ"); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(_){ } }); }
+  box.style.display="flex";
+  box.innerHTML=`<input id="sentQ" placeholder="Rechercher un client…" value="${esc(sentQ)}" style="width:100%;border:1px solid #d9b9bb;padding:10px 12px;font-size:15px"><div style="display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow:auto">${sentF.map(id=>item(id,`Envoyée le ${fd(o[id].data.envoye)} à ${ft(o[id].data.envoye)}`)).join("")||'<p style="margin:0;color:#8d6b6d;font-size:14px">Aucun client trouvé.</p>'}</div>`;
+  const qi=document.getElementById("sentQ"); qi.addEventListener("input",()=>{ sentQ=qi.value; const pos=qi.selectionStart; renderCover(); const n=document.getElementById("sentQ"); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(_){ } }); }
+document.getElementById("bSent").addEventListener("click",()=>{ sentOpen=!sentOpen; renderCover(); });
 
 
 
@@ -1361,7 +1364,7 @@ function newDossier(menage){ curId="d"+Date.now(); document.getElementById("note
     inc:{}, ret:{}, dep:{}, fm:{}, ob:{}, obAutres:"", locks:{}, diag:[], bg:{}, recos:[], prop:{}, purge:{pv:"20 %",rdt:"2,5 %",ans:"10"}, pieces:{}, piecesAutres:[], rdv:"", rdvLieu:"", ent:{}, ani:{} });
   saveNow(); document.getElementById("cover").style.display="none"; go(SCR.findIndex(s=>s.num==="1.1")); }
 /* ===== Application hors connexion : stockage IndexedDB, fichier méthode, envoi au Mac ===== */
-const APP_VERSION="1.0.6";
+const APP_VERSION="1.0.7";
 let DOS={}, METH=null;
 /* Stockage doublé : IndexedDB + copie de secours dans localStorage (iPad : la connexion IndexedDB peut se perdre quand l'app passe en arrière-plan) */
 const KV=(()=>{ let p=null;
